@@ -18,6 +18,17 @@ namespace UsersRoles.Service
 
         public async Task<IActionResult> CreateNewUserAsync(CreateNewUser data)
         {
+            // Проверка на уникальность email
+            var emailExists = await _context.Emails.AnyAsync(e => e.Email == data.Email);
+            if (emailExists)
+            {
+                return new BadRequestObjectResult(new
+                {
+                    status = false,
+                    message = "Такой email уже существует. Введите другой email"
+                });
+            }
+
             //проверка на существование такой же роли
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == data.Tittle);
             if (role == null)
