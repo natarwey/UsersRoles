@@ -29,17 +29,28 @@ namespace UsersRoles.Service
                 });
             }
 
-            //проверка на существование такой же роли
-            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == data.Tittle);
+            // Поиск или создание роли "Обычный пользователь"
+            var defaultRoleTitle = "Обычный пользователь";
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == defaultRoleTitle);
             if (role == null)
             {
                 role = new Roles()
                 {
-                    Tittle = data.Tittle,
+                    Tittle = defaultRoleTitle,
                 };
 
                 await _context.Roles.AddAsync(role);
                 await _context.SaveChangesAsync();
+            }
+
+            // Если роль передана в запросе, используем её
+            if (!string.IsNullOrEmpty(data.Tittle))
+            {
+                var customRole = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == data.Tittle);
+                if (customRole != null)
+                {
+                    role = customRole;
+                }
             }
 
             var user = new Users()
