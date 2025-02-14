@@ -29,5 +29,19 @@ namespace UsersRoles.Controllers
         {
             return await _userService.CreateNewUserAsync(data);
         }
+
+        [HttpPut]
+        [Route("updateUser/{userId}")]
+        public async Task<IActionResult> UpdateUser(int userId, UpdateUserRequest data)
+        {
+            return await _userService.UpdateUserAsync(userId, data);
+        }
+
+        [HttpDelete]
+        [Route("deleteUser/{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            return await _userService.DeleteUserAsync(userId);
+        }
     }
 }

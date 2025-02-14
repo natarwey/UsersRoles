@@ -1,6 +1,6 @@
 ﻿namespace UsersRoles.Requests
 {
-    public class CreateNewUser
+    public class UpdateUserRequest
     {
         public string Email { get; set; }
         public string Password { get; set; }

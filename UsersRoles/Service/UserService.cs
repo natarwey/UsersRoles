@@ -29,33 +29,11 @@ namespace UsersRoles.Service
                 });
             }
 
-            // Поиск или создание роли "Обычный пользователь"
-            var defaultRoleTitle = "Обычный пользователь";
-            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == defaultRoleTitle);
-            if (role == null)
-            {
-                role = new Roles()
-                {
-                    Tittle = defaultRoleTitle,
-                };
-
-                await _context.Roles.AddAsync(role);
-                await _context.SaveChangesAsync();
-            }
-
-            // Если роль передана в запросе, используем её
-            if (!string.IsNullOrEmpty(data.Tittle))
-            {
-                var customRole = await _context.Roles.FirstOrDefaultAsync(r => r.Tittle == data.Tittle);
-                if (customRole != null)
-                {
-                    role = customRole;
-                }
-            }
+            var role = 2;
 
             var user = new Users()
             {
-                Role_id = role.id_Role,
+                Role_id = 2,
                 Name = data.Name,
                 Description = data.Description
             };
@@ -90,6 +68,100 @@ namespace UsersRoles.Service
             {
                 data = users,
                 status = true
+            });
+        }
+
+        public async Task<IActionResult> UpdateUserAsync(int userId, UpdateUserRequest data)
+        {
+            var user = await _context.Users
+                .Include(u => u.Emails)
+                .FirstOrDefaultAsync(u => u.id_User == userId);
+
+            if (user == null)
+            {
+                return new NotFoundObjectResult(new
+                {
+                    status = false,
+                    message = "Пользователь не найден"
+                });
+            }
+
+            if (!string.IsNullOrEmpty(data.Name))
+            {
+                user.Name = data.Name;
+            }
+
+            if (!string.IsNullOrEmpty(data.Description))
+            {
+                user.Description = data.Description;
+            }
+
+            if (!string.IsNullOrEmpty(data.Email))
+            {
+                var email = user.Emails.FirstOrDefault();
+                if (email != null)
+                {
+                    // Проверяем, не занят ли новый email другим пользователем
+                    var emailExists = await _context.Emails
+                        .AnyAsync(e => e.Email == data.Email && e.User_id != userId);
+
+                    if (emailExists)
+                    {
+                        return new BadRequestObjectResult(new
+                        {
+                            status = false,
+                            message = "Такой email уже существует. Введите другой email"
+                        });
+                    }
+
+                    email.Email = data.Email;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(data.Password))
+            {
+                var email = user.Emails.FirstOrDefault();
+                if (email != null)
+                {
+                    email.Password = data.Password;
+                }
+            }
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new OkObjectResult(new
+            {
+                status = true,
+                message = "Пользователь успешно обновлен"
+            });
+        }
+
+        public async Task<IActionResult> DeleteUserAsync(int userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.Emails)
+                .FirstOrDefaultAsync(u => u.id_User == userId);
+
+            if (user == null)
+            {
+                return new NotFoundObjectResult(new
+                {
+                    status = false,
+                    message = "Пользователь не найден"
+                });
+            }
+
+            var emails = user.Emails.ToList();
+            _context.Emails.RemoveRange(emails);
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return new OkObjectResult(new
+            {
+                status = true,
+                message = "Пользователь успешно удален"
             });
         }
     }

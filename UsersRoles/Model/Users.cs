@@ -15,6 +15,6 @@ namespace UsersRoles.Model
         public int Role_id { get; set; }
         public Roles Roles { get; set; }
 
-        //public ICollection<Emails> Emails { get; set; }
+        public ICollection<Emails> Emails { get; set; }
     }
 }

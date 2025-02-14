@@ -7,5 +7,7 @@ namespace UsersRoles.Interfaces
     {
         Task<IActionResult> GetAllUsersAsync();
         Task<IActionResult> CreateNewUserAsync(CreateNewUser data);
+        Task<IActionResult> UpdateUserAsync(int userId, UpdateUserRequest data);
+        Task<IActionResult> DeleteUserAsync(int userId);
     }
 }
